@@ -31,7 +31,12 @@ HEX_EEPROM_FLAGS += --change-section-lma .eeprom=0 --no-change-warnings
 LIBS = -lm -lprintf_flt -lscanf_flt
 
 ## Objects that must be built in order to link
-LIBSRC = $(wildcard revlib/*.c)
+# LIBSRC = $(wildcard revlib/*.c)
+LIBSRC += revlib/rev_serial.c
+LIBSRC += revlib/rev_spi.c
+LIBSRC += revlib/ASA/ASA_spi.c
+LIBSRC += revlib/ASA/ASA_general.c
+LIBSRC += stk500.c
 LIBOBJS = $(patsubst %.c,%.o,$(LIBSRC))
 
 ## Objects explicitly added by the user
@@ -50,7 +55,6 @@ help:
 	avr-objcopy -O ihex $(HEX_FLASH_FLAGS)  $< $@
 
 %.a: %.elf %.hex
-	@echo
 	@avr-size -C --mcu=${MCU} $<
 	@-mkdir -p hex
 	@-mv $*.hex hex/
