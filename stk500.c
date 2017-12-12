@@ -8,8 +8,9 @@ void isp_enter_progmode() {
     ASA_SPIM_cs_init();
     ASA_ID_set(1);
     ASA_SPIM_cs(1);
+    _delay_ms(10);
     spi_master_init();
-    spi_set_frequency(devider_16);
+    spi_set_frequency(devider_64);
     spi_en(1);
 }
 

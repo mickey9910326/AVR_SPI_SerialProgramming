@@ -305,7 +305,27 @@ int main() {
                 break;
             }
             case CMD_SPI_MULTI: {
-
+                // 0 Command ID
+                // 1 NumTx
+                // 2 NumRx
+                // 3 RxStartAddr
+                // 4 cmd1
+                // 5 cmd2
+                // 6 cmd3
+                // 7 cmd4
+                spires[0] = spi_swap(GetCmd.data[4]);
+                spires[1] = spi_swap(GetCmd.data[5]);
+                spires[2] = spi_swap(GetCmd.data[6]);
+                spires[3] = spi_swap(GetCmd.data[7]);
+                ResCmd.bytes = 7;
+                ResCmd.data[0] = CMD_SPI_MULTI;
+                ResCmd.data[1] = STATUS_CMD_OK;
+                ResCmd.data[2] = spires[0];
+                ResCmd.data[3] = spires[1];
+                ResCmd.data[4] = spires[2];
+                ResCmd.data[5] = spires[3];
+                ResCmd.data[6] = STATUS_CMD_OK;
+                put_cmd(&ResCmd);
                 break;
             }
 
