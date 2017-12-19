@@ -29,6 +29,7 @@ uint8_t serial_put(uint8_t data) {
 #define STK_SEQ   0x01
 #define STK_TOKEN 0x0E
 
+Addres_t CurAddres;
 uint8_t sequence = 0;
 
 struct cmd {
@@ -179,7 +180,15 @@ int main() {
                 break;
             }
             case CMD_LOAD_ADDRESS: {
-                // NOTE not implement
+                // MSB first
+                CurAddres.ui8[0] = GetCmd.data[1];
+                CurAddres.ui8[1] = GetCmd.data[2];
+                CurAddres.ui8[2] = GetCmd.data[3];
+                CurAddres.ui8[3] = GetCmd.data[4];
+                ResCmd.bytes = 2;
+                ResCmd.data[0] = CMD_LOAD_ADDRESS;
+                ResCmd.data[1] = STATUS_CMD_OK;
+                put_cmd(&ResCmd);
                 break;
             }
             case CMD_FIRMWARE_UPGRADE: {
@@ -248,7 +257,7 @@ int main() {
                 spi_swap(GetCmd.data[6]);
                 _delay_ms(GetCmd.data[1]);
 
-                ResCmd.data[0] = CMD_ENTER_PROGMODE_ISP;
+                ResCmd.data[0] = CMD_CHIP_ERASE_ISP;
                 if (GetCmd.data[6]!=spires[GetCmd.data[7]]) {
                     ResCmd.bytes = 2;
                     ResCmd.data[1] = STATUS_CMD_FAILED;
@@ -262,6 +271,18 @@ int main() {
                 break;
             }
             case CMD_PROGRAM_FLASH_ISP: {
+                // 0 Command ID
+                // 1 NumBytes
+                // 2 NumBytes
+                // 3 mode
+                // 4 delay
+                // 5 cmd1
+                // 6 cmd2
+                // 7 cmd3
+                // 8 cmd2
+                // 9 poll1
+                // 10 poll2
+                // 11 Data (N bytes)
 
                 break;
             }
