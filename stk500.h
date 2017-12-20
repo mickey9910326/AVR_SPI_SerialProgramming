@@ -24,8 +24,10 @@ void isp_erise_chip(uint8_t delay);
 void isp_program_flash(/* arguments */);
 uint8_t isp_set_param(uint8_t id, uint8_t data);
 uint8_t isp_get_param(uint8_t id, uint8_t* data);
+uint8_t isp_load_flash(uint8_t isHigh, uint8_t addr_a, uint8_t addr_b, uint8_t data);
+uint8_t isp_write_flash(uint8_t addr_a, uint8_t addr_b);
 
 typedef union ADDRESS {
-    uint8_t ui8[4];
     uint32_t ui32;
+    uint8_t ui8[4];
 }Addres_t;

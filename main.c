@@ -215,6 +215,7 @@ int main() {
                 spires[2] = spi_swap(GetCmd.data[10]);
                 spires[3] = spi_swap(GetCmd.data[11]);
                 ResCmd.data[0] = CMD_ENTER_PROGMODE_ISP;
+                _delay_ms(1000);
                 // if (GetCmd.data[6]!=spires[GetCmd.data[7]]) {
                 //     ResCmd.bytes = 2;
                 //     ResCmd.data[1] = STATUS_CMD_FAILED;
@@ -272,18 +273,46 @@ int main() {
             }
             case CMD_PROGRAM_FLASH_ISP: {
                 // 0 Command ID
-                // 1 NumBytes
-                // 2 NumBytes
+                // 1 NumBytes 15:8
+                // 2 NumBytes  7:0
                 // 3 mode
                 // 4 delay
                 // 5 cmd1
                 // 6 cmd2
                 // 7 cmd3
-                // 8 cmd2
-                // 9 poll1
-                // 10 poll2
-                // 11 Data (N bytes)
+                // 8 poll1
+                // 9 poll2
+                // 10 ~ 10+N-1 Data (N bytes)
 
+                // mode A1 --> 1010 0001
+                // Page Mode
+                // Value polling
+                // Write page
+                uint16_t N = (GetCmd.data[1]<<8) + GetCmd.data[2];
+                Addres_t tmpadd = CurAddres;
+                _delay_ms(10);
+                for (uint16_t i = 0; i < N; i++) {
+                    isp_load_flash(i&1, CurAddres.ui8[1], CurAddres.ui8[0], GetCmd.data[10+i]);
+                    if (i&1) {
+                        CurAddres.ui32++;
+                    }
+                    _delay_ms(2);
+                }
+                isp_write_flash(tmpadd.ui8[1], tmpadd.ui8[0]);
+                // isp_write_flash(tmpadd.ui8[1], tmpadd.ui8[0]);
+                _delay_ms(10);
+                _delay_ms(GetCmd.data[4]);
+
+                ResCmd.bytes = 8;
+                ResCmd.data[0] = CMD_PROGRAM_FLASH_ISP;
+                ResCmd.data[1] = STATUS_CMD_OK;
+                ResCmd.data[2] = CurAddres.ui8[0];
+                ResCmd.data[3] = CurAddres.ui8[1];
+                ResCmd.data[4] = CurAddres.ui8[2];
+                ResCmd.data[5] = CurAddres.ui8[3];
+                ResCmd.data[6] = 0xFF;
+                ResCmd.data[7] = 0xFF;
+                put_cmd(&ResCmd);
                 break;
             }
             case CMD_READ_FLASH_ISP: {
