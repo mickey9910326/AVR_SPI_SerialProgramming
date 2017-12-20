@@ -302,15 +302,9 @@ int main() {
                 _delay_ms(10);
                 _delay_ms(GetCmd.data[4]);
 
-                ResCmd.bytes = 8;
+                ResCmd.bytes = 2;
                 ResCmd.data[0] = CMD_PROGRAM_FLASH_ISP;
                 ResCmd.data[1] = STATUS_CMD_OK;
-                ResCmd.data[2] = CurAddres.ui8[0];
-                ResCmd.data[3] = CurAddres.ui8[1];
-                ResCmd.data[4] = CurAddres.ui8[2];
-                ResCmd.data[5] = CurAddres.ui8[3];
-                ResCmd.data[6] = 0xFF;
-                ResCmd.data[7] = 0xFF;
                 put_cmd(&ResCmd);
                 break;
             }
@@ -337,25 +331,84 @@ int main() {
                     ResCmd.data[1] = STATUS_CMD_FAILED;
                     put_cmd(&ResCmd);
                 } else {
-                    ResCmd.bytes = 3+N+1;
+                    ResCmd.bytes = 3+N;
                     ResCmd.data[1] = STATUS_CMD_OK;
                     ResCmd.data[2+N] = STATUS_CMD_OK;
-                    ResCmd.data[3+N] = 0x20;
                     put_cmd(&ResCmd);
                 }
                 break;
             }
             case CMD_PROGRAM_EEPROM_ISP: {
+                // 0 Command ID
+                // 1 NumBytes 15:8
+                // 2 NumBytes  7:0
+                // 3 mode
+                // 4 delay
+                // 5 cmd1
+                // 6 cmd2
+                // 7 cmd3
+                // 8 poll1
+                // 9 poll2
+                // 10 ~ 10+N-1 Data (N bytes)
 
+                uint16_t N = (GetCmd.data[1]<<8) + GetCmd.data[2];
+                _delay_ms(10);
+                for (uint16_t i = 0; i < N; i++) {
+                    isp_write_eeprom(CurAddres.ui8[1], CurAddres.ui8[0], GetCmd.data[10+i]);
+                    CurAddres.ui32++;
+                    _delay_ms(GetCmd.data[4]);
+                }
+
+                ResCmd.bytes = 2;
+                ResCmd.data[0] = CMD_PROGRAM_EEPROM_ISP;
+                ResCmd.data[1] = STATUS_CMD_OK;
+                put_cmd(&ResCmd);
                 break;
             }
             case CMD_READ_EEPROM_ISP: {
+                // 0 Command ID
+                // 1 NumBytes 15:8
+                // 2 NumBytes  7:0
+                // 3 cmd1
 
+                uint16_t N = (GetCmd.data[1]<<8) + GetCmd.data[2];
+                for (uint16_t i = 0; i < N; i++) {
+                    spi_swap(GetCmd.data[3]);
+                    spi_swap(CurAddres.ui8[1]);
+                    spi_swap(CurAddres.ui8[0]);
+                    ResCmd.data[2+i] = spi_swap(0x00);
+                    CurAddres.ui32++;
+                    _delay_ms(1);
+                }
+                ResCmd.data[0] = CMD_READ_EEPROM_ISP;
+                if ( 0 ) {
+                    ResCmd.bytes = 2;
+                    ResCmd.data[1] = STATUS_CMD_FAILED;
+                    put_cmd(&ResCmd);
+                } else {
+                    ResCmd.bytes = 3+N;
+                    ResCmd.data[1] = STATUS_CMD_OK;
+                    ResCmd.data[2+N] = STATUS_CMD_OK;
+                    put_cmd(&ResCmd);
+                }
                 break;
             }
             case CMD_PROGRAM_FUSE_ISP:
             case CMD_PROGRAM_LOCK_ISP: {
-
+                // 0 Command ID
+                // 1 cmd1
+                // 2 cmd2
+                // 3 cmd3
+                // 4 cmd4
+                spi_swap(GetCmd.data[1]);
+                spi_swap(GetCmd.data[2]);
+                spi_swap(GetCmd.data[3]);
+                spi_swap(GetCmd.data[4]);
+                ResCmd.bytes = 3;
+                ResCmd.data[0] = CMD_READ_OSCCAL_ISP;
+                ResCmd.data[1] = STATUS_CMD_OK;
+                ResCmd.data[2] = STATUS_CMD_OK;
+                put_cmd(&ResCmd);
                 break;
             }
             case CMD_READ_FUSE_ISP:
