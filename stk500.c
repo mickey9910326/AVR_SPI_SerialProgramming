@@ -108,4 +108,10 @@ uint8_t isp_write_flash(uint8_t addr_a, uint8_t addr_b) {
     return 0;
 }
 
-// uint8_t
+uint8_t isp_write_eeprom(uint8_t addr_a, uint8_t addr_b, uint8_t data) {
+    spi_swap(0xC0);
+    spi_swap(addr_a);
+    spi_swap(addr_b);
+    spi_swap(data);
+    return 0;
+}

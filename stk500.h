@@ -26,6 +26,7 @@ uint8_t isp_set_param(uint8_t id, uint8_t data);
 uint8_t isp_get_param(uint8_t id, uint8_t* data);
 uint8_t isp_load_flash(uint8_t isHigh, uint8_t addr_a, uint8_t addr_b, uint8_t data);
 uint8_t isp_write_flash(uint8_t addr_a, uint8_t addr_b);
+uint8_t isp_write_eeprom(uint8_t addr_a, uint8_t addr_b, uint8_t data);
 
 typedef union ADDRESS {
     uint32_t ui32;
