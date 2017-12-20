@@ -34,7 +34,7 @@ uint8_t sequence = 0;
 
 struct cmd {
     uint16_t bytes;
-    uint8_t data[256];
+    uint8_t data[300];
 } GetCmd, ResCmd;
 
 uint8_t get_cmd() {
@@ -181,10 +181,10 @@ int main() {
             }
             case CMD_LOAD_ADDRESS: {
                 // MSB first
-                CurAddres.ui8[0] = GetCmd.data[1];
-                CurAddres.ui8[1] = GetCmd.data[2];
-                CurAddres.ui8[2] = GetCmd.data[3];
-                CurAddres.ui8[3] = GetCmd.data[4];
+                CurAddres.ui8[0] = GetCmd.data[4];
+                CurAddres.ui8[1] = GetCmd.data[3];
+                CurAddres.ui8[2] = GetCmd.data[2];
+                CurAddres.ui8[3] = GetCmd.data[1];
                 ResCmd.bytes = 2;
                 ResCmd.data[0] = CMD_LOAD_ADDRESS;
                 ResCmd.data[1] = STATUS_CMD_OK;
@@ -292,11 +292,10 @@ int main() {
                 Addres_t tmpadd = CurAddres;
                 _delay_ms(10);
                 for (uint16_t i = 0; i < N; i++) {
-                    isp_load_flash(i&1, CurAddres.ui8[1], CurAddres.ui8[0], GetCmd.data[10+i]);
+                    isp_load_flash(i&1, 0, CurAddres.ui8[0], GetCmd.data[10+i]);
                     if (i&1) {
                         CurAddres.ui32++;
                     }
-                    _delay_ms(2);
                 }
                 isp_write_flash(tmpadd.ui8[1], tmpadd.ui8[0]);
                 // isp_write_flash(tmpadd.ui8[1], tmpadd.ui8[0]);
@@ -316,7 +315,34 @@ int main() {
                 break;
             }
             case CMD_READ_FLASH_ISP: {
+                // 0 Command ID
+                // 1 NumBytes 15:8
+                // 2 NumBytes  7:0
+                // 3 cmd1
 
+                uint16_t N = (GetCmd.data[1]<<8) + GetCmd.data[2];
+                for (uint16_t i = 0; i < N; i++) {
+                    spi_swap(GetCmd.data[3] | (i&1)<<3 );
+                    spi_swap(CurAddres.ui8[1]);
+                    spi_swap(CurAddres.ui8[0]);
+                    ResCmd.data[2+i] = spi_swap(0x00);
+                    if (i&1) {
+                        CurAddres.ui32++;
+                    }
+                    _delay_ms(1);
+                }
+                ResCmd.data[0] = CMD_READ_FLASH_ISP;
+                if ( 0 ) {
+                    ResCmd.bytes = 2;
+                    ResCmd.data[1] = STATUS_CMD_FAILED;
+                    put_cmd(&ResCmd);
+                } else {
+                    ResCmd.bytes = 3+N+1;
+                    ResCmd.data[1] = STATUS_CMD_OK;
+                    ResCmd.data[2+N] = STATUS_CMD_OK;
+                    ResCmd.data[3+N] = 0x20;
+                    put_cmd(&ResCmd);
+                }
                 break;
             }
             case CMD_PROGRAM_EEPROM_ISP: {
