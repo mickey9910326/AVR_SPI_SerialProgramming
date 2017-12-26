@@ -1,3 +1,19 @@
+#ifndef __STK500_H__
+#define __STK500_H__
+
+// *****************[ STK 500 pin defines ]******************************
+// 可更改 RST 以配合燒錄卡
+#define RST       PF4
+#define RST_PORT  PORTF
+#define RST_DDR   DDRF
+#define RST_PIN   PINF
+#define RST_SHIFT RST
+#define RST_MASK  (1<<RST)
+
+// 低電位致能
+// PIN腳經過ASABU有反向，填1；沒反向，填0
+#define RST_EN  1
+
 // *****************[ STK parameter constants ]***************************
 #define STK500_BUILD_NUMBER_LOW              0
 #define STK500_BUILD_NUMBER_HIGH             1
@@ -21,7 +37,7 @@
 void isp_enter_progmode();
 void isp_leave_progmode();
 void isp_erise_chip(uint8_t delay);
-void isp_program_flash(/* arguments */);
+void isp_program_flash();
 uint8_t isp_set_param(uint8_t id, uint8_t data);
 uint8_t isp_get_param(uint8_t id, uint8_t* data);
 uint8_t isp_load_flash(uint8_t isHigh, uint8_t addr_a, uint8_t addr_b, uint8_t data);
@@ -32,3 +48,5 @@ typedef union ADDRESS {
     uint32_t ui32;
     uint8_t ui8[4];
 }Addres_t;
+
+#endif // __STK500_H__

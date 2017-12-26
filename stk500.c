@@ -1,13 +1,23 @@
-#include "stk500.h"
 #include "command.h"
 #include "revlib/ASA/ASA_spi.h"
 #include "revlib/ASA/ASA_general.h"
+#include "stk500.h"
+
+void RST_init() {
+    ASA_REGPUT(RST_DDR, 1, RST_MASK, RST_SHIFT);
+}
+
+void RST_en(uint8_t isEnable) {
+    if(isEnable>1)
+    return;
+    ASA_REGPUT(RST_PORT, isEnable, RST_MASK, RST_SHIFT);
+}
 
 void isp_enter_progmode() {
     ASA_ID_init();
-    ASA_SPIM_cs_init();
+    RST_init();
     ASA_ID_set(1);
-    ASA_SPIM_cs(1);
+    RST_en(RST_EN);
     _delay_ms(10);
     spi_master_init();
     spi_set_frequency(devider_64);
@@ -16,7 +26,7 @@ void isp_enter_progmode() {
 
 void isp_leave_progmode() {
     ASA_SPIM_cs(0);
-    spi_en(0);
+    spi_en(!RST_EN);
 }
 
 void isp_erise_chip(uint8_t delay) {
