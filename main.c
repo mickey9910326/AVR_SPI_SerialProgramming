@@ -19,8 +19,8 @@ uint8_t serial_put(uint8_t data) {
 
 #define STATUS_START  0
 #define STATUS_SEQ    1
-#define STATUS_MSG1  2
-#define STATUS_MSG2  3
+#define STATUS_MSG1   2
+#define STATUS_MSG2   3
 #define STATUS_TOKEN  4
 #define STATUS_DATA   5
 #define STATUS_CHKSUM 6
@@ -48,9 +48,11 @@ uint8_t get_cmd() {
 
     ch = serial_get();
     chksum ^= ch;
-    if (ch != sequence+1)
-        return 2;
-    sequence++;
+    // NOTE
+    // if (ch != sequence+1)
+    //     return 2;
+    // sequence++;
+    sequence = ch;
 
     ch = serial_get();
     chksum ^= ch;
@@ -119,6 +121,7 @@ int main() {
         if (get_cmd_res) {
             /* TODO error out*/
         }
+        // ***[ STK general command constants ]********************************
         switch (GetCmd.data[0]) {
             case CMD_SIGN_ON: {
                 ResCmd.bytes = 11;
@@ -195,7 +198,7 @@ int main() {
                 // NOTE not implement
                 break;
             }
-            // ***[ STK ISP command constants ]******************************
+            // ***[ STK ISP command constants ]********************************
             case CMD_ENTER_PROGMODE_ISP: {
                 // 0 Command ID
                 // 1 timeout
@@ -234,6 +237,7 @@ int main() {
                 // 0 Command ID
                 // 1 preDelay
                 // 2 postDelay
+
                 _delay_ms(GetCmd.data[1]);
                 isp_leave_progmode();
                 _delay_ms(GetCmd.data[2]);
@@ -298,7 +302,6 @@ int main() {
                     }
                 }
                 isp_write_flash(tmpadd.ui8[1], tmpadd.ui8[0]);
-                // isp_write_flash(tmpadd.ui8[1], tmpadd.ui8[0]);
                 _delay_ms(10);
                 _delay_ms(GetCmd.data[4]);
 
