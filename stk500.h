@@ -1,7 +1,19 @@
 #ifndef __STK500_H__
 #define __STK500_H__
 
-// *****************[ STK 500 pin defines ]******************************
+/**
+ * @file stk500.h
+ * @author LiYu
+ * @date 2017.12.26
+ * @brief STK500 腳位定義、及硬體相關函式。
+ *
+ * 若要更改reset腳位，可更改 "STK 500 pin defines" 區域內定義。
+ * "STK parameter constants" 區域，定義硬體資訊，如韌體版本、驅動電壓、SPI周期等，可
+ * 參考 AVR068.pdf (AVR068: STK500 Communication Protocol)。
+ *
+ */
+
+// *****************[ STK pin defines ]************************************
 // 可更改 RST 以配合燒錄卡
 #define RST       PF4
 #define RST_PORT  PORTF
@@ -44,6 +56,9 @@ uint8_t isp_load_flash(uint8_t isHigh, uint8_t addr_a, uint8_t addr_b, uint8_t d
 uint8_t isp_write_flash(uint8_t addr_a, uint8_t addr_b);
 uint8_t isp_write_eeprom(uint8_t addr_a, uint8_t addr_b, uint8_t data);
 
+/**
+ * @brief 4 bytes type of int, can access as uint8_t[4] or uint32_t.
+ */
 typedef union ADDRESS {
     uint32_t ui32;
     uint8_t ui8[4];
