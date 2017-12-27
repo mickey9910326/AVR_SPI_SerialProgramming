@@ -1,21 +1,19 @@
+/**
+ * @file main.c
+ * @author LiYu
+ * @date 2017.12.27
+ * @brief STK500 主要邏輯處理，負責接收並處理船UART來之訊息。
+ *
+ * 接收從UART來之訊息封包，並解析成命令，在依照命令去執行相對應動作，個命令應對應動作請
+ * 參照 AVR068.pdf (AVR068: STK500 Communication Protocol)。
+ *
+ */
+
 #include "revlib/ASA/ASA_spi.h"
 #include "revlib/ASA/ASA_general.h"
 #include "revlib/rev_serial.h"
 #include "command.h"
 #include "stk500.h"
-
-uint8_t serial_get() {
-    while((UCSR0A&(1<<RXC0))==0)
-        ;
-	return UDR0;
-}
-
-uint8_t serial_put(uint8_t data) {
-    while((UCSR0A&(1<<UDRE0))==0)
-        ;
-    UDR0 = data;
-    return 0;
-}
 
 #define STATUS_START  0
 #define STATUS_SEQ    1
@@ -29,14 +27,49 @@ uint8_t serial_put(uint8_t data) {
 #define STK_SEQ   0x01
 #define STK_TOKEN 0x0E
 
-Addres_t CurAddres;
-uint8_t sequence = 0;
-
+/**
+ * @brief STK500主要邏輯處理，負責接收並處理UART傳來之訊息。
+ *
+ * NOTE The current STK500 firmware can only handle messages with a message body
+ * of maximum of 275 bytes.
+ */
 struct cmd {
     uint16_t bytes;
     uint8_t data[300];
-} GetCmd, ResCmd;
+};
 
+
+Addres_t CurAddres; ///< Recording the current memory location to write.
+uint8_t Sequence = 0; ///< Recording the current sequence of STK500 packet.
+
+struct cmd GetCmd; ///< Save the command after decoding (function get_cmd).
+struct cmd ResCmd; ///< The response command to be sent. It will be sent\
+ by functino put_cmd.
+
+/**
+ * @brief Get one byte data from UART
+ */
+uint8_t serial_get() {
+    while((UCSR0A&(1<<RXC0))==0)
+        ;
+	return UDR0;
+}
+
+/**
+ * @brief Put one byte data to UART
+ */
+uint8_t serial_put(uint8_t data) {
+    while((UCSR0A&(1<<UDRE0))==0)
+        ;
+    UDR0 = data;
+    return 0;
+}
+
+/**
+ * @brief Get a command from UART, will put in global var "GetCmd".
+ *
+ * 依照 STK500v2 的訊息封包格式進行解包，並解包成命令存放在全域變數 "GetCmd" 中。
+ */
 uint8_t get_cmd() {
     uint8_t ch;
     uint8_t chksum = 0;
@@ -49,10 +82,10 @@ uint8_t get_cmd() {
     ch = serial_get();
     chksum ^= ch;
     // NOTE
-    // if (ch != sequence+1)
+    // if (ch != Sequence+1)
     //     return 2;
-    // sequence++;
-    sequence = ch;
+    // Sequence++;
+    Sequence = ch;
 
     ch = serial_get();
     chksum ^= ch;
@@ -79,6 +112,11 @@ uint8_t get_cmd() {
     return 0;
 }
 
+/**
+ * @brief Put a command "PutCmd" to UART.
+ *
+ * 依照 STK500v2 的訊息封包格式將全域變數 "PutCmd" 進行打包，並傳送到UART串列埠。
+ */
 uint8_t put_cmd(struct cmd* c) {
     uint8_t chksum=0;
     uint8_t ch;
@@ -87,7 +125,7 @@ uint8_t put_cmd(struct cmd* c) {
     chksum ^= ch;
     serial_put(ch);
 
-    ch = sequence;
+    ch = Sequence;
     chksum ^= ch;
     serial_put(ch);
 
@@ -115,7 +153,7 @@ uint8_t put_cmd(struct cmd* c) {
 int main() {
     rev_serial_init();
     uint8_t get_cmd_res;
-    uint8_t spires[4];
+    uint8_t spires[4]; ///< 接收下達給待燒錄裝置的4byte spi命令
     while (1) {
         get_cmd_res = get_cmd();
         if (get_cmd_res) {
@@ -445,6 +483,7 @@ int main() {
                 // 5 cmd2
                 // 6 cmd3
                 // 7 cmd4
+                
                 spires[0] = spi_swap(GetCmd.data[4]);
                 spires[1] = spi_swap(GetCmd.data[5]);
                 spires[2] = spi_swap(GetCmd.data[6]);
