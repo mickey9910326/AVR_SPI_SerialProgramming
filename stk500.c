@@ -1,3 +1,10 @@
+/**
+ * @file stk500.c
+ * @author LiYu
+ * @date 2017.12.27
+ * @brief STK500.h function implement.
+ */
+
 #include "command.h"
 #include "revlib/ASA/ASA_spi.h"
 #include "revlib/ASA/ASA_general.h"
@@ -41,9 +48,11 @@ void isp_erise_chip(uint8_t delay) {
     _delay_ms(delay);
 }
 
-void isp_program_flash(/* arguments */) {
-
-}
+/**
+ * @brief 存放可寫入之 STK500 硬體參數。
+ *
+ * 不可寫入部分使用define預先定義
+ */
 struct param {
     char vtarget;
     char vadjust;
@@ -53,6 +62,7 @@ struct param {
     char rst_polarity;
     char init;
 };
+
 struct param PARAM = {
     STK500_VTARGET,
     STK500_VADJUST,

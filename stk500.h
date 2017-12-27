@@ -1,6 +1,3 @@
-#ifndef __STK500_H__
-#define __STK500_H__
-
 /**
  * @file stk500.h
  * @author LiYu
@@ -12,6 +9,9 @@
  * 參考 AVR068.pdf (AVR068: STK500 Communication Protocol)。
  *
  */
+
+#ifndef __STK500_H__
+#define __STK500_H__
 
 // *****************[ STK pin defines ]************************************
 // 可更改 RST 以配合燒錄卡
@@ -27,6 +27,7 @@
 #define RST_EN  1
 
 // *****************[ STK parameter constants ]***************************
+// STK500 硬體、韌體參數
 #define STK500_BUILD_NUMBER_LOW              0
 #define STK500_BUILD_NUMBER_HIGH             1
 #define STK500_HW_VER                        2
@@ -46,14 +47,41 @@
 
 #include <inttypes.h>
 
+/**
+ * @brief Let MCU enter programming mode.
+ *
+ * 令待燒錄晶片進入可燒錄模式
+ */
 void isp_enter_progmode();
+/**
+ * @brief Let MCU leave programming mode.
+ *
+ * 令待燒錄晶片進入可燒錄模式
+ */
 void isp_leave_progmode();
+/**
+ * @brief Clear MCU's flash and eeprom.
+ */
 void isp_erise_chip(uint8_t delay);
-void isp_program_flash();
+/**
+ * @brief Set parameter of STK500 device.
+ */
 uint8_t isp_set_param(uint8_t id, uint8_t data);
+/**
+ * @brief Get parameter of STK500 device.
+ */
 uint8_t isp_get_param(uint8_t id, uint8_t* data);
+/**
+ * @brief Let MCU load data to memory to be write.
+ */
 uint8_t isp_load_flash(uint8_t isHigh, uint8_t addr_a, uint8_t addr_b, uint8_t data);
+/**
+ * @brief Let MCU write the loaded data to flash of the assigned addres.
+ */
 uint8_t isp_write_flash(uint8_t addr_a, uint8_t addr_b);
+/**
+ * @brief Let MCU write the loaded data to eeprom of the assigned addres.
+ */
 uint8_t isp_write_eeprom(uint8_t addr_a, uint8_t addr_b, uint8_t data);
 
 /**

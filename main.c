@@ -483,7 +483,7 @@ int main() {
                 // 5 cmd2
                 // 6 cmd3
                 // 7 cmd4
-                
+
                 spires[0] = spi_swap(GetCmd.data[4]);
                 spires[1] = spi_swap(GetCmd.data[5]);
                 spires[2] = spi_swap(GetCmd.data[6]);
