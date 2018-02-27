@@ -15,16 +15,16 @@
 
 // *****************[ STK pin defines ]************************************
 // 可更改 RST 以配合燒錄卡
-#define RST       PF4
-#define RST_PORT  PORTF
-#define RST_DDR   DDRF
-#define RST_PIN   PINF
+#define RST       PG4
+#define RST_PORT  PORTG
+#define RST_DDR   DDRG
+#define RST_PIN   PING
 #define RST_SHIFT RST
 #define RST_MASK  (1<<RST)
 
 // 低電位致能
-// PIN腳經過ASABU有反向，填1；沒反向，填0
-#define RST_EN  1
+// PIN腳經過ASABUS有反向，填1；沒反向，填0
+#define RST_EN 0
 
 // *****************[ STK parameter constants ]***************************
 // STK500 硬體、韌體參數
